@@ -29,3 +29,10 @@ Now you should be able to run the tests:
 ```sh
 $ pytest
 ```
+
+Test the app locally:
+
+```sh
+$ pserve development.ini
+```
+

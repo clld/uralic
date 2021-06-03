@@ -1,0 +1,23 @@
+Metadata-Version: 2.1
+Name: pytest-clld
+Version: 1.0.2
+Summary: UNKNOWN
+Home-page: UNKNOWN
+Author: UNKNOWN
+Author-email: UNKNOWN
+License: UNKNOWN
+Platform: UNKNOWN
+Classifier: Framework :: Pytest
+Requires-Dist: pytest (>=3.6)
+Requires-Dist: clld
+Requires-Dist: sqlalchemy (>=1.0)
+Requires-Dist: WebTest (>=1.3.1)
+Requires-Dist: pyramid (>=1.6)
+Requires-Dist: mock
+Requires-Dist: html5lib
+Requires-Dist: webob
+Requires-Dist: selenium (>=3.8.1)
+
+UNKNOWN
+
+
