@@ -1,0 +1,26 @@
+Metadata-Version: 2.0
+Name: WebHelpers2
+Version: 2.0
+Summary: WebHelpers2
+Home-page: https://webhelpers2.readthedocs.org/en/latest/
+Author: Mike Orr, Ben Bangert, Phil Jenvey
+Author-email: sluggoster@gmail.com, ben@groovie.org, pjenvey@groovie.org
+License: UNKNOWN
+Platform: UNKNOWN
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Environment :: Web Environment
+Classifier: Framework :: Pylons
+Classifier: Framework :: Pyramid
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python
+Classifier: Topic :: Internet :: WWW/HTTP :: Dynamic Content
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Requires-Dist: MarkupSafe (>=0.9.2)
+Requires-Dist: six (>=1.4.0)
+
+
+WebHelpers2 is the successor to the widely-used WebHelpers utilities.
+It contains convenience functions to make HTML tags, process text, format numbers, do basic statistics, work with collections, and more.
+
+

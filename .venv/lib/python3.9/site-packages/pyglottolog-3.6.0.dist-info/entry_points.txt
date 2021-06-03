@@ -1,0 +1,4 @@
+[console_scripts]
+glottolog = pyglottolog.__main__:main
+glottolog-admin = pyglottolog.__main__:admin_main
+

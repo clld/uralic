@@ -1,0 +1,37 @@
+Metadata-Version: 2.1
+Name: clldmpg
+Version: 4.1.0
+Summary: Python library supporting development of CLLD apps maintained by MPI SHH
+Home-page: http://clld.org
+Author: Robert Forkel
+Author-email: robert_forkel@eva.mpg.de
+License: Apache Software License
+Keywords: web pyramid
+Platform: UNKNOWN
+Classifier: Intended Audience :: Developers
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: Implementation :: CPython
+Classifier: Topic :: Internet :: WWW/HTTP
+Classifier: Topic :: Internet :: WWW/HTTP :: WSGI
+Requires-Dist: clldutils (>=3.5clld>=4.2.2)
+Requires-Dist: purl
+Provides-Extra: dev
+Requires-Dist: flake8 ; extra == 'dev'
+Requires-Dist: tox ; extra == 'dev'
+Requires-Dist: twine ; extra == 'dev'
+Requires-Dist: wheel ; extra == 'dev'
+Provides-Extra: test
+Requires-Dist: cdstarcat ; extra == 'test'
+Requires-Dist: coverage (>=4.2) ; extra == 'test'
+Requires-Dist: pytest-clld ; extra == 'test'
+Requires-Dist: pytest-cov ; extra == 'test'
+Requires-Dist: pytest-mock ; extra == 'test'
+
+UNKNOWN
+
+

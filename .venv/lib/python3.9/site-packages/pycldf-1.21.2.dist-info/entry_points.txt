@@ -1,0 +1,3 @@
+[console_scripts]
+cldf = pycldf.__main__:main
+
