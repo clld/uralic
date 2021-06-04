@@ -70,7 +70,8 @@ def main(args):
             models.Feature,
             param['id'],
             id=param['id'],
-            name='{} [{}]'.format(param['name'], param['id']),
+            name='{}'.format(param['name']),
+            # name='{} [{}]'.format(param['name'], param['id']),
         )
     for pid, codes in itertools.groupby(
         sorted(

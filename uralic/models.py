@@ -26,10 +26,15 @@ from clld_glottologfamily_plugin.models import HasFamilyMixin
 @implementer(interfaces.ILanguage)
 class Variety(CustomModelMixin, common.Language, HasFamilyMixin):
     pk = Column(Integer, ForeignKey('language.pk'), primary_key=True)
-    glottocode = Column(Unicode)
-    subfamily = Column(Unicode)
+    glottocode = Column(String)
+    subfamily = Column(String)
 
 
 @implementer(interfaces.IParameter)
 class Feature(CustomModelMixin, common.Parameter):
     pk = Column(Integer, ForeignKey('parameter.pk'), primary_key=True)
+    # sortkey = Column(Unicode)
+    # concepticon_id = Column(Unicode)
+    # category = Column(Unicode)
+    # contribution_pk = Column(Integer, ForeignKey('cldfdataset.pk'))
+    # contribution = relationship(CLDFDataset, backref='parameters')
