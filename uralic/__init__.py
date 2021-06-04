@@ -1,3 +1,4 @@
+import functools
 import collections
 
 from pyramid.config import Configurator
@@ -7,14 +8,15 @@ from clld_glottologfamily_plugin import util
 from clld.interfaces import IMapMarker, IValueSet, IValue, IDomainElement
 from clldutils.svg import pie, icon, data_url
 
+from clld.web.app import menu_item
+
 # we must make sure custom models are known at database initialization!
 from uralic import models
 
 
-
 class LanguageByFamilyMapMarker(util.LanguageByFamilyMapMarker):
     def __call__(self, ctx, req):
-    
+
         if IValueSet.providedBy(ctx):
             c = collections.Counter([v.domainelement.jsondata['color'] for v in ctx.values])
             return data_url(pie(*list(zip(*[(v, k) for k, v in c.most_common()])), **dict(stroke_circle=True)))
@@ -22,9 +24,8 @@ class LanguageByFamilyMapMarker(util.LanguageByFamilyMapMarker):
             return data_url(icon(ctx.jsondata['color'].replace('#', 'c')))
         if IValue.providedBy(ctx):
             return data_url(icon(ctx.domainelement.jsondata['color'].replace('#', 'c')))
-    
-        return super(LanguageByFamilyMapMarker, self).__call__(ctx, req)
 
+        return super(LanguageByFamilyMapMarker, self).__call__(ctx, req)
 
 
 def main(global_config, **settings):
@@ -35,6 +36,17 @@ def main(global_config, **settings):
 
     config.include('clldmpg')
 
+    # this customize the order of each page
+    config.register_menu(
+        ('dataset', functools.partial(menu_item, 'dataset', label='Uralic Areal Typology')),
+        ('languages', functools.partial(menu_item, 'languages')),
+        ('parameters', functools.partial(menu_item, 'parameters')),
+        # ('StructureDataset', lambda ctx, req: (req.route_url(
+        #     'contribution', id='StructureDataset'), 'Features')),
+        # ('Wordlist', lambda ctx, req: (req.route_url('contribution', id='Wordlist'), 'Wordlist')),
+        ('sources', functools.partial(menu_item, 'sources')),
+        # ('about', lambda c, r: (r.route_url('about'), 'About')),
+    )
 
     config.registry.registerUtility(LanguageByFamilyMapMarker(), IMapMarker)
 
