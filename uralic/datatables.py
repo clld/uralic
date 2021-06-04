@@ -9,16 +9,16 @@ from clld_glottologfamily_plugin.datatables import FamilyCol
 from uralic import models
 
 
-
-
 class Languages(datatables.Languages):
     def base_query(self, query):
         return query.join(Family).options(joinedload(models.Variety.family)).distinct()
 
     def col_defs(self):
+        print(models.Variety)
         return [
             LinkCol(self, 'name'),
-            FamilyCol(self, 'Family', models.Variety),
+            # FamilyCol(self, 'Family', models.Variety),
+            Col(self, "Subfamily", model_col=models.Variety.subfamily),
             Col(self,
                 'latitude',
                 sDescription='<small>The geographic latitude</small>'),
@@ -27,7 +27,6 @@ class Languages(datatables.Languages):
                 sDescription='<small>The geographic longitude</small>'),
             LinkToMapCol(self, 'm'),
         ]
-
 
 
 def includeme(config):

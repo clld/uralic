@@ -13,6 +13,7 @@ from clld_glottologfamily_plugin.util import load_families
 
 
 import uralic
+# inherited from models.py
 from uralic import models
 
 
@@ -37,7 +38,6 @@ def main(args):
 
     )
 
-
     contrib = data.add(
         common.Contribution,
         None,
@@ -47,6 +47,7 @@ def main(args):
     )
 
     for lang in args.cldf.iter_rows('LanguageTable', 'id', 'glottocode', 'name', 'latitude', 'longitude'):
+        # print(lang["Subfamily"])
         data.add(
             models.Variety,
             lang['id'],
@@ -55,6 +56,8 @@ def main(args):
             latitude=lang['latitude'],
             longitude=lang['longitude'],
             glottocode=lang['glottocode'],
+            # edit the models.py by adding a subfamily
+            subfamily=lang['Subfamily'],
         )
 
     for rec in bibtex.Database.from_file(args.cldf.bibpath, lowercase=True):
@@ -62,14 +65,13 @@ def main(args):
 
     refs = collections.defaultdict(list)
 
-
     for param in args.cldf.iter_rows('ParameterTable', 'id', 'name'):
         data.add(
             models.Feature,
             param['id'],
             id=param['id'],
             name='{} [{}]'.format(param['name'], param['id']),
-    )
+        )
     for pid, codes in itertools.groupby(
         sorted(
             args.cldf.iter_rows('CodeTable', 'id', 'name', 'description', 'parameterReference'),
@@ -129,7 +131,6 @@ def main(args):
         isolates_icon='tcccccc',
         strict=False,
     )
-
 
 
 def prime_cache(args):
