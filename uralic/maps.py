@@ -1,6 +1,6 @@
 from clld.interfaces import ILanguage, IIndex, IParameter
 from clld.web.adapters.geojson import GeoJson, GeoJsonParameter
-from clld.web.maps import ParameterMap, Layer
+from clld.web.maps import ParameterMap, Layer, LanguageMap
 from clld.db.meta import DBSession
 from clld.db.models import common
 from clldutils.misc import nfilter
@@ -28,6 +28,7 @@ class GeoJsonAreas(GeoJson):
                         'id': lang.id,
                         'label': '%s %s' % (lang.id, lang.name),
                         'subfamily': lang.subfamily,
+                        'color': lang.color,
                         #'language': {'id': lang.id},
                         #'latlng': [lang.latitude, lang.longitude],
                     },
@@ -52,8 +53,22 @@ class AdmixtureMap(FeatureMap):
         super(AdmixtureMap, self).__init__(ctx, req, **kw)
 
 
+class VarietyMap(LanguageMap):
+
+    """Map showing a single language."""
+
+    def get_layers(self):
+        yield Layer(
+            'areas',
+            'Speakeer Area',
+            dict(type='FeatureCollection', features=[self.ctx.jsondata['feature']]))
+        for la in LanguageMap.get_layers(self):
+            yield la
+
+
 def includeme(config):
     config.register_adapter(GeoJsonAreas, ILanguage, IIndex)
     config.register_map('parameter', FeatureMap)
     config.register_map('languages', AdmixtureMap)
+    config.register_map('language', VarietyMap)
     config.register_adapter(GeoJsonFeature, IParameter, name=GeoJson.mimetype)

@@ -16,16 +16,26 @@ from clld import interfaces
 from clld.db.meta import Base, CustomModelMixin
 from clld.db.models import common
 
+SUBFAMILIES = {
+    'Finnic': '#99afb6',
+    'Mari': '#80bdb0',
+    'Mordvin': '#80c9ac',
+    'Permic': '#89d1a6',
+    'Saami': '#aadf93',
+    'Samoyed': '#f9ed77',
+    'Ugric': '#87a8b1',
+}
 
-# -----------------------------------------------------------------------------
-# specialized common mapper classes
-# -----------------------------------------------------------------------------
 
 @implementer(interfaces.ILanguage)
 class Variety(CustomModelMixin, common.Language):
     pk = Column(Integer, ForeignKey('language.pk'), primary_key=True)
     glottocode = Column(String)
     subfamily = Column(String)
+
+    @property
+    def color(self):
+        return SUBFAMILIES[self.subfamily]
 
 
 @implementer(interfaces.IParameter)

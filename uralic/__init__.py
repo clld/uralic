@@ -3,18 +3,16 @@ import collections
 
 from pyramid.config import Configurator
 
-from clld_glottologfamily_plugin import util
-
-from clld.interfaces import IMapMarker, IValueSet, IValue, IDomainElement
+from clld.interfaces import IMapMarker, IValueSet, IValue, IDomainElement, ILanguage
 from clldutils.svg import pie, icon, data_url
-
+from clld.web.icon import MapMarker
 from clld.web.app import menu_item
 
 # we must make sure custom models are known at database initialization!
 from uralic import models
 
 
-class LanguageByFamilyMapMarker(util.LanguageByFamilyMapMarker):
+class LanguageByFamilyMapMarker(MapMarker):
     def __call__(self, ctx, req):
 
         if IValueSet.providedBy(ctx):
@@ -26,8 +24,10 @@ class LanguageByFamilyMapMarker(util.LanguageByFamilyMapMarker):
             return data_url(icon(ctx.jsondata['color'].replace('#', 'c')))
         if IValue.providedBy(ctx):
             return data_url(icon(ctx.domainelement.jsondata['color'].replace('#', 'c')))
-
+        if ILanguage.providedBy(ctx):
+            return data_url(icon(ctx.color.replace('#', 'c')))
         return super(LanguageByFamilyMapMarker, self).__call__(ctx, req)
+
 
 def main(global_config, **settings):
     """ This function returns a Pyramid WSGI application.
