@@ -1,9 +1,5 @@
-from sqlalchemy.orm import joinedload
 from clld.web import datatables
 from clld.web.datatables.base import LinkCol, Col, LinkToMapCol, IdCol, DetailsRowLinkCol
-
-from clld_glottologfamily_plugin.models import Family
-from clld_glottologfamily_plugin.datatables import FamilyCol
 
 from clld.web.datatables.parameter import Parameters
 
@@ -11,14 +7,10 @@ from uralic import models
 
 
 class Languages(datatables.Languages):
-    def base_query(self, query):
-        return query.join(Family).options(joinedload(models.Variety.family)).distinct()
-
     def col_defs(self):
         # print(models.Variety)
         return [
             LinkCol(self, 'name'),
-            # FamilyCol(self, 'Family', models.Variety),
             Col(self, "Subfamily", model_col=models.Variety.subfamily),
             # Col(self, "Glottocode", model_col=models.Variety.glottocode),
             Col(self,
@@ -37,7 +29,7 @@ class Params(Parameters):
         return [
             IdCol(self, 'id'),
             LinkCol(self, 'name'),
-            # category_col(self),
+            Col(self, 'domain', model_col=models.Feature.category),
             DetailsRowLinkCol(self, '#', button_text='values'),
         ]
 

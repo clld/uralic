@@ -3,6 +3,7 @@ import itertools
 import collections
 import pathlib
 
+from markdown import markdown
 from pycldf import Sources, Dataset
 from clldutils.misc import nfilter
 from clldutils.color import qualitative_colors
@@ -12,13 +13,16 @@ from clld.db.models import common
 from clld.lib import bibtex
 from csvw.dsv import reader
 
-from clld_glottologfamily_plugin.util import load_families
-
 import uralic
 # inherited from models.py
 from uralic import models
 
 csv.field_size_limit(1000000)
+
+
+def render_description(s):
+    s = markdown(s)
+    return s
 
 
 def main(args):
@@ -31,11 +35,11 @@ def main(args):
         common.Dataset,
         uralic.__name__,
         id=uralic.__name__,
+        name="Uralic Languages",
         domain='uralic.clld.org',
-
-        publisher_name="Max Planck Institute for the Science of Human History",
-        publisher_place="Jena",
-        publisher_url="http://www.shh.mpg.de",
+        publisher_name="Max Planck Institute for Evolutionary Anthropology",
+        publisher_place="Leipzig",
+        publisher_url="http://www.eva.mpg.de",
         license="http://creativecommons.org/licenses/by/4.0/",
         jsondata={
             'license_icon': 'cc-by.png',
@@ -77,11 +81,18 @@ def main(args):
     refs = collections.defaultdict(list)
 
     for param in args.cldf.iter_rows('ParameterTable', 'id', 'name'):
+        description = args.cldf.directory.parent.joinpath('doc', '{}.md'.format(param['id']))
+        if description.exists():
+            description = description.read_text(encoding='utf8')
+        else:
+            description = None
         data.add(
             models.Feature,
             param['id'],
             id=param['id'],
             name='{}'.format(param['name']),
+            markup_description=render_description(description) if description else None,
+            category=param['Area'],
     )
     data.add(
         models.Feature,
@@ -166,7 +177,7 @@ def main(args):
                 '{}-{}-{}'.format(lid, 'adm', k),
                 id='{}-{}-{}'.format(lid, 'adm', k),
                 name=str(v),
-                frequency=v,
+                frequency=100 * v,
                 valueset=vs,
                 domainelement=data['DomainElement'][k.lower()],
         )
@@ -177,13 +188,6 @@ def main(args):
             source=data['Source'][sid],
             description='; '.join(nfilter(pages))
         ))
-    load_families(
-        Data(),
-        [(l.glottocode, l) for l in data['Variety'].values()],
-        glottolog_repos=args.glottolog,
-        isolates_icon='tcccccc',
-        strict=False,
-    )
 
 
 def prime_cache(args):

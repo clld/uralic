@@ -3,6 +3,14 @@
 <%! active_menu_item = "parameters" %>
 <%block name="title">${_('Parameter')} ${ctx.name}</%block>
 
+<%block name="head">
+    <style>
+        blockquote p {
+            font-size: inherit !important;
+            line-height: inherit !important;
+        }
+    </style>
+</%block>
 
 <div class="span4" style="float: right; margin-top: 1em;">
     <%util:well title="Values">
@@ -20,10 +28,10 @@
 </div>
 
 
-<h2>${_('Parameter')} ${ctx.name}</h2>
+<h2>${ctx.name}</h2>
 
-% if ctx.description:
-<p>${ctx.description}</p>
+% if ctx.markup_description:
+<div>${ctx.markup_description|n}</div>
 % endif
 
 <div style="clear: both"/>
