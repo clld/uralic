@@ -18,15 +18,16 @@ class LanguageByFamilyMapMarker(util.LanguageByFamilyMapMarker):
     def __call__(self, ctx, req):
 
         if IValueSet.providedBy(ctx):
-            c = collections.Counter([v.domainelement.jsondata['color'] for v in ctx.values])
-            return data_url(pie(*list(zip(*[(v, k) for k, v in c.most_common()])), **dict(stroke_circle=True)))
+            c = [(v.frequency if v.frequency is not None else 1, v.domainelement.jsondata['color'])
+                 for v in ctx.values]
+            c.sort(key=lambda i: i[1])
+            return data_url(pie([i[0] for i in c], [i[1] for i in c], **dict(stroke_circle=True)))
         if IDomainElement.providedBy(ctx):
             return data_url(icon(ctx.jsondata['color'].replace('#', 'c')))
         if IValue.providedBy(ctx):
             return data_url(icon(ctx.domainelement.jsondata['color'].replace('#', 'c')))
 
         return super(LanguageByFamilyMapMarker, self).__call__(ctx, req)
-
 
 def main(global_config, **settings):
     """ This function returns a Pyramid WSGI application.

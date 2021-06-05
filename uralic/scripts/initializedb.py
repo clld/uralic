@@ -1,5 +1,6 @@
 import itertools
 import collections
+import pathlib
 
 from pycldf import Sources
 from clldutils.misc import nfilter
@@ -8,6 +9,7 @@ from clld.cliutil import Data, bibtex2source
 from clld.db.meta import DBSession
 from clld.db.models import common
 from clld.lib import bibtex
+from csvw.dsv import reader
 
 from clld_glottologfamily_plugin.util import load_families
 
@@ -18,9 +20,7 @@ from uralic import models
 
 
 def main(args):
-
     assert args.glottolog, 'The --glottolog option is required!'
-
     data = Data()
     data.add(
         common.Dataset,
@@ -46,8 +46,9 @@ def main(args):
         description=args.cldf.properties.get('dc:bibliographicCitation'),
     )
 
+    n2l = {}
     for lang in args.cldf.iter_rows('LanguageTable', 'id', 'glottocode', 'name', 'latitude', 'longitude'):
-        # print(lang["Subfamily"])
+        n2l[lang['name'].replace(' ', '_').replace('-', '_')] = lang['id']
         data.add(
             models.Variety,
             lang['id'],
@@ -71,11 +72,30 @@ def main(args):
             param['id'],
             id=param['id'],
             name='{}'.format(param['name']),
-            # name='{} [{}]'.format(param['name'], param['id']),
+    )
+    data.add(
+        models.Feature,
+        'adm',
+        id='adm',
+        name="Admixture coefficients",
+    )
+    for cid, color in [
+        ('c1', '#e79e3f'),
+        ('c2', '#7783c5'),
+        ('c3', '#b44094'),
+        ('c4', '#7d9f64'),
+    ]:
+        data.add(
+            common.DomainElement,
+            cid,
+            id=cid,
+            name=cid,
+            parameter=data['Feature']['adm'],
+            jsondata=dict(color=color),
         )
     for pid, codes in itertools.groupby(
-        sorted(
-            args.cldf.iter_rows('CodeTable', 'id', 'name', 'description', 'parameterReference'),
+            sorted(
+                args.cldf.iter_rows('CodeTable', 'id', 'name', 'description', 'parameterReference'),
             key=lambda v: (v['parameterReference'], v['id'])),
         lambda v: v['parameterReference'],
     ):
@@ -117,6 +137,28 @@ def main(args):
             name=val['value'],
             valueset=vs,
             domainelement=data['DomainElement'][val['codeReference']],
+        )
+
+    for row in reader(pathlib.Path(uralic.__file__).parent.parent.parent / 'admixture_coef.csv', dicts=True):
+        lid = n2l[row['lang']]
+        vs = data.add(
+            common.ValueSet,
+            '{}-adm'.format(lid),
+            id='{}-adm'.format(lid),
+            language=data['Variety'][lid],
+            parameter=data['Feature']['adm'],
+            contribution=contrib,
+        )
+        for k in ['C1', 'C2', 'C3', 'C4']:
+            v = float(row[k])
+            data.add(
+                common.Value,
+                '{}-{}-{}'.format(lid, 'adm', k),
+                id='{}-{}-{}'.format(lid, 'adm', k),
+                name=str(v),
+                frequency=v,
+                valueset=vs,
+                domainelement=data['DomainElement'][k.lower()],
         )
 
     for (vsid, sid), pages in refs.items():
