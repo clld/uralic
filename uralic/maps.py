@@ -52,6 +52,61 @@ class AdmixtureMap(FeatureMap):
         ctx = DBSession.query(common.Parameter).filter(common.Parameter.id == 'adm').one()
         super(AdmixtureMap, self).__init__(ctx, req, **kw)
 
+    def get_legends(self):
+        from clld.web.util.htmllib import HTML
+        from clld.web.util import helpers
+        from clld.web.maps import Legend
+        from uralic.models import SUBFAMILIES
+        from clldutils.color import _to_rgb
+
+        items = []
+
+        for layer in self.layers:
+            if layer.id == 'areas':
+                continue
+            items.append([
+                HTML.label(
+                    HTML.input(
+                        class_="stay-open",
+                        type="checkbox",
+                        checked="checked",
+                        onclick=helpers.JS_CLLD.mapToggleLayer(
+                            self.eid, layer.id, helpers.JS("this"))),
+                    getattr(layer, 'marker', ''),
+                    layer.name,
+                    class_="checkbox inline stay-open",
+                    style="margin-left: 5px; margin-right: 5px;",
+                ),
+            ])
+        yield Legend(
+            self,
+            'layers',
+            items,
+            label='Ancestry components',
+            stay_open=True,
+            item_attrs=dict(style='clear: right'))
+        items = [
+            (
+                ' ',
+                HTML.span(' ', style="display: inline-block; height: 1em; width: 1em; outline: 1px solid {}; background-color: rgba({}, {}, {}, 0.5);".format(
+                    c, *_to_rgb(c)
+                )),
+                ' ',
+                sf,
+            ) for sf, c in SUBFAMILIES.items()
+        ]
+        yield Legend(
+            self,
+            'areas',
+            items,
+            label='Speaker areas',
+            stay_open=True,
+            item_attrs=dict(style='clear: right'))
+
+        for legend in FeatureMap.get_legends(self):
+            if legend.name != 'layers':
+                yield legend
+
 
 class VarietyMap(LanguageMap):
 
