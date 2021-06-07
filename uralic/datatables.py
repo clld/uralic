@@ -23,13 +23,26 @@ class Languages(datatables.Languages):
         ]
 
 
+class FeatureIDCol(LinkCol):
+    # add the feature id column
+    def get_attrs(self, item):
+        return {'label': self.get_obj(item).id.split('-')[1]}
+
+
 class Datapoints(Values):
+    # exclude the column of "Admixture coefficients"
+    def base_query(self, query):
+        return Values.base_query(self, query).filter(common.Parameter.name != 'Admixture coefficients')
+
+    # exclude the columns of details and source
     def col_defs(self):
         res = [c for c in Values.col_defs(self) if not c.name in ['d', 'source']]
-        return res
+        # print(IdCol(self, 'id').get_attrs())
+        return res + [FeatureIDCol(self, 'id')]
 
 
 class Params(Parameters):
+    # exclude the column of "id"
     def base_query(self, query):
         return Parameters.base_query(self, query).filter(common.Parameter.id != 'adm')
 
