@@ -1,14 +1,14 @@
 from clld.web import datatables
 from clld.web.datatables.base import LinkCol, Col, LinkToMapCol, IdCol, DetailsRowLinkCol
-
+from clld.web.datatables.value import Values
 from clld.web.datatables.parameter import Parameters
+from clld.db.models import common
 
 from uralic import models
 
 
 class Languages(datatables.Languages):
     def col_defs(self):
-        # print(models.Variety)
         return [
             LinkCol(self, 'name'),
             Col(self, "Subfamily", model_col=models.Variety.subfamily),
@@ -23,7 +23,15 @@ class Languages(datatables.Languages):
         ]
 
 
+class Datapoints(Values):
+    def col_defs(self):
+        res = [c for c in Values.col_defs(self) if not c.name in ['d', 'source']]
+        return res
+
+
 class Params(Parameters):
+    def base_query(self, query):
+        return Parameters.base_query(self, query).filter(common.Parameter.id != 'adm')
 
     def col_defs(self):
         return [
@@ -38,3 +46,4 @@ def includeme(config):
     """register custom datatables"""
     config.register_datatable('parameters', Params)
     config.register_datatable('languages', Languages)
+    config.register_datatable('values', Datapoints)

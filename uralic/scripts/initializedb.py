@@ -7,7 +7,7 @@ from markdown import markdown
 from pycldf import Sources, Dataset
 from clldutils.misc import nfilter
 from clldutils.color import qualitative_colors
-from clld.cliutil import Data, bibtex2source
+from clld.cliutil import Data, bibtex2source, add_language_codes
 from clld.db.meta import DBSession
 from clld.db.models import common
 from clld.lib import bibtex
@@ -27,7 +27,7 @@ def render_description(s):
 
 def main(args):
     geo = Dataset.from_metadata(args.cldf.directory.parent.parent / 'rantanenurageo' / 'cldf' / 'Generic-metadata.json')
-    langs = {r['id']: r['glottocode'] for r in geo.iter_rows('LanguageTable', 'id', 'glottocode')}
+    langs = {r['id']: r['glottocode'] or r['id'] for r in geo.iter_rows('LanguageTable', 'id', 'glottocode')}
     areas = {langs[r['languageReference']]: r['SpeakerArea'] for r in geo.iter_rows('areas.csv', 'languageReference')}
     assert args.glottolog, 'The --glottolog option is required!'
     data = Data()
@@ -62,7 +62,8 @@ def main(args):
             'Hill_Mari': 'kozy1238',
             'South_Selkup': 'kety1234',
         }.get(lang['name'], lang['glottocode'])
-        data.add(
+        assert lang['glottocode'] or lang['name'] == 'East_Mansi'
+        v = data.add(
             models.Variety,
             lang['id'],
             id=lang['id'],
@@ -72,8 +73,10 @@ def main(args):
             glottocode=lang['glottocode'],
             # edit the models.py by adding a subfamily
             subfamily=lang['Subfamily'],
-            jsondata=dict(feature=areas[lang['glottocode']])
+            jsondata=dict(feature=areas[lang['glottocode'] or 'EastMansi'])
         )
+        if lang['glottocode']:
+            add_language_codes(data, v, lang['ISO639P3code'], glottocode=lang['glottocode'])
 
     for rec in bibtex.Database.from_file(args.cldf.bibpath, lowercase=True):
         data.add(common.Source, rec.id, _obj=bibtex2source(rec))
