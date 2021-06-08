@@ -32,7 +32,10 @@ class FeatureIDCol(LinkCol):
 class Datapoints(Values):
     # exclude the column of "Admixture coefficients"
     def base_query(self, query):
-        return Values.base_query(self, query).filter(common.Parameter.name != 'Admixture coefficients')
+        q = Values.base_query(self, query)
+        if self.parameter is None:
+            return q.filter(common.Parameter.id != 'adm')
+        return q
 
     # exclude the columns of details and source
     def col_defs(self):

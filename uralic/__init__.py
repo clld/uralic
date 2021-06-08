@@ -36,6 +36,7 @@ def main(global_config, **settings):
     config.include('clld.web.app')
 
     config.include('clldmpg')
+    config.include('clld_phylogeny_plugin')
 
     # this customize the order of each page
     config.register_menu(

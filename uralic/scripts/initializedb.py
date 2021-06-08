@@ -3,6 +3,7 @@ import itertools
 import collections
 import pathlib
 
+from nexus import NexusReader
 from markdown import markdown
 from pycldf import Sources, Dataset
 from clldutils.misc import nfilter
@@ -12,6 +13,7 @@ from clld.db.meta import DBSession
 from clld.db.models import common
 from clld.lib import bibtex
 from csvw.dsv import reader
+from clld_phylogeny_plugin.models import Phylogeny, LanguageTreeLabel, TreeLabel
 
 import uralic
 # inherited from models.py
@@ -25,17 +27,27 @@ def render_description(s):
     return s
 
 
+def get_tree():
+    nex = NexusReader(pathlib.Path(uralic.__file__).parent.parent.parent / 'Uralic_MCC.nex')
+    nex.trees.detranslate()
+    return nex.trees.trees[0]
+
+
+def get_admixture():
+    return reader(
+        pathlib.Path(uralic.__file__).parent.parent.parent / 'admixture_coef.csv', dicts=True)
+
+
 def main(args):
     geo = Dataset.from_metadata(args.cldf.directory.parent.parent / 'rantanenurageo' / 'cldf' / 'Generic-metadata.json')
     langs = {r['id']: r['glottocode'] or r['id'] for r in geo.iter_rows('LanguageTable', 'id', 'glottocode')}
     areas = {langs[r['languageReference']]: r['SpeakerArea'] for r in geo.iter_rows('areas.csv', 'languageReference')}
-    assert args.glottolog, 'The --glottolog option is required!'
     data = Data()
     data.add(
         common.Dataset,
         uralic.__name__,
         id=uralic.__name__,
-        name="Uralic Languages",
+        description="Uralic Languages",
         domain='uralic.clld.org',
         publisher_name="Max Planck Institute for Evolutionary Anthropology",
         publisher_place="Leipzig",
@@ -55,7 +67,7 @@ def main(args):
         description=args.cldf.properties.get('dc:bibliographicCitation'),
     )
 
-    n2l = {}
+    n2l, n2v = {}, {}
     for lang in args.cldf.iter_rows('LanguageTable', 'id', 'glottocode', 'name', 'latitude', 'longitude'):
         n2l[lang['name'].replace(' ', '_').replace('-', '_')] = lang['id']
         lang['glottocode'] = {
@@ -75,8 +87,23 @@ def main(args):
             subfamily=lang['Subfamily'],
             jsondata=dict(feature=areas[lang['glottocode'] or 'EastMansi'])
         )
+        n2v[v.name] = v
         if lang['glottocode']:
             add_language_codes(data, v, lang['ISO639P3code'], glottocode=lang['glottocode'])
+
+    tree = get_tree().newick_tree
+    phylo = Phylogeny(id='p', name='Uralic languages')
+
+    def rename(n):
+        if n.name:
+            #name = n.name
+            #n.name = n2l[name]
+            LanguageTreeLabel(
+                language=n2v[n.name], treelabel=TreeLabel(id=n.name, name=n.name, phylogeny=phylo))
+
+    tree.visit(rename)
+    phylo.newick = tree.newick + ';'
+    DBSession.add(phylo)
 
     for rec in bibtex.Database.from_file(args.cldf.bibpath, lowercase=True):
         data.add(common.Source, rec.id, _obj=bibtex2source(rec))
@@ -163,7 +190,7 @@ def main(args):
             domainelement=data['DomainElement'][val['codeReference']],
         )
 
-    for row in reader(pathlib.Path(uralic.__file__).parent.parent.parent / 'admixture_coef.csv', dicts=True):
+    for row in get_admixture():
         lid = n2l[row['lang']]
         vs = data.add(
             common.ValueSet,

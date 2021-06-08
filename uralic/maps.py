@@ -1,9 +1,15 @@
 from clld.interfaces import ILanguage, IIndex, IParameter
 from clld.web.adapters.geojson import GeoJson, GeoJsonParameter
-from clld.web.maps import ParameterMap, Layer, LanguageMap
+from clld.web.maps import ParameterMap, Layer, LanguageMap, Legend
+from clld.web.util.htmllib import HTML
+from clld.web.util import helpers
 from clld.db.meta import DBSession
 from clld.db.models import common
 from clldutils.misc import nfilter
+from clldutils.color import _to_rgb
+
+from uralic.models import SUBFAMILIES
+
 
 class GeoJsonFeature(GeoJsonParameter):
     def feature_properties(self, ctx, req, valueset):
@@ -46,19 +52,7 @@ class FeatureMap(ParameterMap):
         for layer in ParameterMap.get_layers(self):
             yield layer
 
-
-class AdmixtureMap(FeatureMap):
-    def __init__(self, ctx, req, **kw):
-        ctx = DBSession.query(common.Parameter).filter(common.Parameter.id == 'adm').one()
-        super(AdmixtureMap, self).__init__(ctx, req, **kw)
-
     def get_legends(self):
-        from clld.web.util.htmllib import HTML
-        from clld.web.util import helpers
-        from clld.web.maps import Legend
-        from uralic.models import SUBFAMILIES
-        from clldutils.color import _to_rgb
-
         items = []
 
         for layer in self.layers:
@@ -82,7 +76,7 @@ class AdmixtureMap(FeatureMap):
             self,
             'layers',
             items,
-            label='Ancestry components',
+            label=self.ctx.name,
             stay_open=True,
             item_attrs=dict(style='clear: right'))
         items = [
@@ -103,9 +97,15 @@ class AdmixtureMap(FeatureMap):
             stay_open=True,
             item_attrs=dict(style='clear: right'))
 
-        for legend in FeatureMap.get_legends(self):
+        for legend in ParameterMap.get_legends(self):
             if legend.name != 'layers':
                 yield legend
+
+
+class AdmixtureMap(FeatureMap):
+    def __init__(self, ctx, req, **kw):
+        ctx = DBSession.query(common.Parameter).filter(common.Parameter.id == 'adm').one()
+        super(AdmixtureMap, self).__init__(ctx, req, **kw)
 
 
 class VarietyMap(LanguageMap):
