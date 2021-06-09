@@ -16,7 +16,7 @@ class GeoJsonFeature(GeoJsonParameter):
         return {
             'values': list(valueset.values),
             'label': ', '.join(nfilter(v.name for v in valueset.values))
-                if valueset.parameter.id != 'adm' else self.get_language(ctx, req, valueset).name}
+            if valueset.parameter.id != 'adm' else self.get_language(ctx, req, valueset).name}
 
 
 class GeoJsonAreas(GeoJson):
@@ -29,16 +29,16 @@ class GeoJsonAreas(GeoJson):
         for lang in ctx.get_query():
             polygon = lang.jsondata['feature']
             yield {
-                    'type': 'Feature',
-                    'properties': {
+                'type': 'Feature',
+                'properties': {
                         'id': lang.id,
                         'label': '%s %s' % (lang.id, lang.name),
                         'subfamily': lang.subfamily,
                         'color': lang.color,
-                        #'language': {'id': lang.id},
-                        #'latlng': [lang.latitude, lang.longitude],
-                    },
-                    'geometry': polygon['geometry'],
+                        # 'language': {'id': lang.id},
+                        # 'latlng': [lang.latitude, lang.longitude],
+                },
+                'geometry': polygon['geometry'],
             }
 
 
