@@ -76,7 +76,6 @@ def main(args):
         n2l[lang['name'].replace(' ', '_').replace('-', '_')] = lang['id']
         lang['glottocode'] = {
             'Hill_Mari': 'kozy1238',
-            'South_Selkup': 'kety1234',
         }.get(lang['name'], lang['glottocode'])
         assert lang['glottocode'] or lang['name'] == 'East_Mansi'
         v = data.add(
