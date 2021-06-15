@@ -204,7 +204,7 @@ def main(args):
             contribution=contrib,
         )
         for k in ['Finnic ancestry', 'Ob-Ugric ancestry', 'Volgaic ancestry', 'Saami ancestry']:
-            v = float(row[k])
+            v = round(float(row[k]), 3)
             data.add(
                 common.Value,
                 '{}-{}-{}'.format(lid, 'adm', k),
