@@ -29,7 +29,7 @@ setup(
 
 ],
 extras_require={
-        'dev': ['flake8', 'waitress'],
+        'dev': ['flake8', 'waitress', 'python-nexus'],
         'test': [
             'mock',
             'pytest>=5.4',
