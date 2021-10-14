@@ -47,7 +47,8 @@ def main(args):
         common.Dataset,
         uralic.__name__,
         id=uralic.__name__,
-        description="Uralic Languages",
+        name='UraTyp',
+        description="Uralic Areal Typology",
         domain='uralic.clld.org',
         publisher_name="Max Planck Institute for Evolutionary Anthropology",
         publisher_place="Leipzig",
@@ -59,13 +60,13 @@ def main(args):
 
     )
 
-    contrib = data.add(
-        common.Contribution,
-        None,
-        id='cldf',
-        name=args.cldf.properties.get('dc:title'),
-        description=args.cldf.properties.get('dc:bibliographicCitation'),
-    )
+    for row in args.cldf.iter_rows('ContributionTable', 'id', 'name'):
+        data.add(
+            common.Contribution,
+            row['id'],
+            id=row['id'],
+            name=row['name'],
+        )
 
     n2l, n2v = {}, {}
     for lang in args.cldf.iter_rows('LanguageTable', 'id', 'glottocode', 'name', 'latitude', 'longitude'):
@@ -110,7 +111,7 @@ def main(args):
 
     refs = collections.defaultdict(list)
 
-    for param in args.cldf.iter_rows('ParameterTable', 'id', 'name'):
+    for param in args.cldf.iter_rows('ParameterTable', 'id', 'name', 'contributionReference'):
         description = args.cldf.directory.parent.joinpath('doc', '{}.md'.format(param['id']))
         if description.exists():
             description = description.read_text(encoding='utf8')
@@ -123,6 +124,7 @@ def main(args):
             name='{}'.format(param['name']),
             markup_description=render_description(description) if description else None,
             category=param['Area'],
+            contribution=data['Contribution'][param['contributionReference']],
     )
     data.add(
         models.Feature,
@@ -162,9 +164,23 @@ def main(args):
                 parameter=data['Feature'][code['parameterReference']],
                 jsondata=dict(color=color),
             )
+    for ex in args.cldf.iter_rows('ExampleTable', 'id', 'languageReference'):
+        data.add(
+            common.Sentence,
+            ex['id'],
+            id=ex['id'],
+            language=data['Variety'][ex['languageReference']],
+            name=ex['Primary_Text'],
+            analyzed='\t'.join(ex['Analyzed_Word']),
+            original_script='\t'.join(ex['Analyzed_Word_IPA']),
+            gloss='\t'.join(ex['Gloss']),
+            description=ex['Translated_Text'],
+        )
     for val in args.cldf.iter_rows(
             'ValueTable',
-            'id', 'value', 'languageReference', 'parameterReference', 'codeReference', 'source'):
+            'id', 'value', 'languageReference', 'parameterReference', 'codeReference',
+            'exampleReference',
+            'source'):
         if val['value'] is None:  # Missing values are ignored.
             continue
         vsid = (val['languageReference'], val['parameterReference'])
@@ -176,19 +192,22 @@ def main(args):
                 id='-'.join(vsid),
                 language=data['Variety'][val['languageReference']],
                 parameter=data['Feature'][val['parameterReference']],
-                contribution=contrib,
+                contribution=data['Contribution'][val['parameterReference'][:2]],
             )
         for ref in val.get('source', []):
             sid, pages = Sources.parse(ref)
             refs[(vsid, sid)].append(pages)
-        data.add(
+        v = data.add(
             common.Value,
             val['id'],
             id=val['id'],
             name=val['value'],
+            description=val['Comment'],
             valueset=vs,
             domainelement=data['DomainElement'][val['codeReference']],
         )
+        if val['exampleReference']:
+            DBSession.add(common.ValueSentence(value=v, sentence=data['Sentence'][val['exampleReference']]))
 
     for row in get_admixture():
         lid = n2l[row['lang']]
@@ -198,7 +217,7 @@ def main(args):
             id='{}-adm'.format(lid),
             language=data['Variety'][lid],
             parameter=data['Feature']['adm'],
-            contribution=contrib,
+            contribution=data['Contribution']['UT'],
         )
         for k in ['C1', 'C2', 'C3', 'C4']:
             v = float(row[k])

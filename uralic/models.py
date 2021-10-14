@@ -44,5 +44,5 @@ class Feature(CustomModelMixin, common.Parameter):
     # sortkey = Column(Unicode)
     # concepticon_id = Column(Unicode)
     category = Column(Unicode)
-    # contribution_pk = Column(Integer, ForeignKey('cldfdataset.pk'))
-    # contribution = relationship(CLDFDataset, backref='parameters')
+    contribution_pk = Column(Integer, ForeignKey('contribution.pk'))
+    contribution = relationship(common.Contribution, backref='parameters')

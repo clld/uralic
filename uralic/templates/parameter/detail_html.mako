@@ -56,6 +56,8 @@
 
 <h2>${ctx.name}</h2>
 
+${h.link(req, ctx.contribution)}
+
 % if ctx.markup_description:
 <div>${ctx.markup_description|n}</div>
 % endif
