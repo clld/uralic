@@ -34,14 +34,18 @@ def get_tree():
 
 
 def get_admixture():
-    return reader(
+    admix_dic = reader(
         pathlib.Path(uralic.__file__).parent.parent.parent / 'admixture_coef.csv', dicts=True)
+    return admix_dic
 
 
 def main(args):
-    geo = Dataset.from_metadata(args.cldf.directory.parent.parent / 'rantanenurageo' / 'cldf' / 'Generic-metadata.json')
-    langs = {r['id']: r['glottocode'] or r['id'] for r in geo.iter_rows('LanguageTable', 'id', 'glottocode')}
-    areas = {langs[r['languageReference']]: r['SpeakerArea'] for r in geo.iter_rows('areas.csv', 'languageReference')}
+    geo = Dataset.from_metadata(args.cldf.directory.parent.parent /
+                                'rantanenurageo' / 'cldf' / 'Generic-metadata.json')
+    langs = {r['id']: r['glottocode'] or r['id']
+             for r in geo.iter_rows('LanguageTable', 'id', 'glottocode')}
+    areas = {langs[r['languageReference']]: r['SpeakerArea']
+             for r in geo.iter_rows('areas.csv', 'languageReference')}
     data = Data()
     data.add(
         common.Dataset,
@@ -73,7 +77,6 @@ def main(args):
         n2l[lang['name'].replace(' ', '_').replace('-', '_')] = lang['id']
         lang['glottocode'] = {
             'Hill_Mari': 'kozy1238',
-            'South_Selkup': 'kety1234',
         }.get(lang['name'], lang['glottocode'])
         assert lang['glottocode'] or lang['name'] == 'East_Mansi'
         v = data.add(
@@ -130,13 +133,13 @@ def main(args):
         models.Feature,
         'adm',
         id='adm',
-        name="Admixture coefficients",
+        name="Admixture component",
     )
     for cid, color in [
-        ('c1', '#e79e3f'),
-        ('c2', '#7783c5'),
-        ('c3', '#b44094'),
-        ('c4', '#7d9f64'),
+        ('Finnic ancestry', '#e79e3f'),
+        ('Ob-Ugric ancestry', '#7783c5'),
+        ('Volgaic ancestry', '#b44094'),
+        ('Saami ancestry', '#7d9f64'),
     ]:
         data.add(
             common.DomainElement,
@@ -219,17 +222,17 @@ def main(args):
             parameter=data['Feature']['adm'],
             contribution=data['Contribution']['UT'],
         )
-        for k in ['C1', 'C2', 'C3', 'C4']:
-            v = float(row[k])
+        for k in ['Finnic ancestry', 'Ob-Ugric ancestry', 'Volgaic ancestry', 'Saami ancestry']:
+            v = round(float(row[k]), 3)
             data.add(
                 common.Value,
                 '{}-{}-{}'.format(lid, 'adm', k),
                 id='{}-{}-{}'.format(lid, 'adm', k),
                 name=str(v),
-                frequency=100 * v,
+                frequency=100 * v,  # admixture proportions
                 valueset=vs,
-                domainelement=data['DomainElement'][k.lower()],
-        )
+                domainelement=data['DomainElement'][k],
+            )
 
     for (vsid, sid), pages in refs.items():
         DBSession.add(common.ValueSetReference(

@@ -16,14 +16,17 @@ from clld import interfaces
 from clld.db.meta import Base, CustomModelMixin
 from clld.db.models import common
 
+from clld_phylogeny_plugin.interfaces import IPhylogeny
+from clld_phylogeny_plugin.models import Phylogeny
+
 SUBFAMILIES = {
-    'Finnic': '#99afb6',
-    'Mari': '#80bdb0',
+    'Finnic': '#31688E',  # dark blue
+    'Mari': '#443A83',  # dark purple
     'Mordvin': '#80c9ac',
-    'Permic': '#89d1a6',
-    'Saami': '#aadf93',
-    'Samoyed': '#f9ed77',
-    'Ugric': '#87a8b1',
+    'Permic': '#440154',  # purple
+    'Saami': '#35B779',  # green
+    'Samoyed': '#FDE725',  # yellow
+    'Ugric': '#21908C',  # light green
 }
 
 
