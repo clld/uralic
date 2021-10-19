@@ -135,16 +135,16 @@ def main(args):
         id='adm',
         name="Admixture component",
     )
-    for cid, color in [
-        ('Finnic ancestry', '#e79e3f'),
-        ('Ob-Ugric ancestry', '#7783c5'),
-        ('Volgaic ancestry', '#b44094'),
-        ('Saami ancestry', '#7d9f64'),
+    for ccid, cid, color in [
+        ('C1', 'Finnic ancestry', '#e79e3f'),
+        ('C2', 'Ob-Ugric ancestry', '#7783c5'),
+        ('C3', 'Volgaic ancestry', '#b44094'),
+        ('C4', 'Saami ancestry', '#7d9f64'),
     ]:
         data.add(
             common.DomainElement,
-            cid,
-            id=cid,
+            ccid,
+            id=ccid,
             name=cid,
             parameter=data['Feature']['adm'],
             jsondata=dict(color=color),
@@ -167,6 +167,15 @@ def main(args):
                 parameter=data['Feature'][code['parameterReference']],
                 jsondata=dict(color=color),
             )
+        data.add(
+            common.DomainElement,
+            '{}-?'.format(pid),
+            id='{}-NA'.format(pid),
+            name='?',
+            description='missing value',
+            parameter=data['Feature'][pid],
+            jsondata=dict(color='#f00'),
+        )
     for ex in args.cldf.iter_rows('ExampleTable', 'id', 'languageReference'):
         data.add(
             common.Sentence,
@@ -184,8 +193,6 @@ def main(args):
             'id', 'value', 'languageReference', 'parameterReference', 'codeReference',
             'exampleReference',
             'source'):
-        if val['value'] is None:  # Missing values are ignored.
-            continue
         vsid = (val['languageReference'], val['parameterReference'])
         vs = data['ValueSet'].get(vsid)
         if not vs:
@@ -207,7 +214,7 @@ def main(args):
             name=val['value'],
             description=val['Comment'],
             valueset=vs,
-            domainelement=data['DomainElement'][val['codeReference']],
+            domainelement=data['DomainElement'][val['codeReference'] if val['value'] else '{}-?'.format(val['parameterReference'])],
         )
         if val['exampleReference']:
             DBSession.add(common.ValueSentence(value=v, sentence=data['Sentence'][val['exampleReference']]))
@@ -222,7 +229,7 @@ def main(args):
             parameter=data['Feature']['adm'],
             contribution=data['Contribution']['UT'],
         )
-        for k in ['Finnic ancestry', 'Ob-Ugric ancestry', 'Volgaic ancestry', 'Saami ancestry']:
+        for k in ['C1', 'C2', 'C3', 'C4']:#['Finnic ancestry', 'Ob-Ugric ancestry', 'Volgaic ancestry', 'Saami ancestry']:
             v = round(float(row[k]), 3)
             data.add(
                 common.Value,
