@@ -122,8 +122,8 @@ class VarietyMap(LanguageMap):
 
 
 def includeme(config):
-    config.register_adapter(GeoJsonAreas, ILanguage, IIndex)
+    #config.register_adapter(GeoJsonAreas, ILanguage, IIndex)
     config.register_map('parameter', FeatureMap)
-    config.register_map('languages', AdmixtureMap)
+    #config.register_map('languages', AdmixtureMap)
     config.register_map('language', VarietyMap)
     config.register_adapter(GeoJsonFeature, IParameter, name=GeoJson.mimetype)

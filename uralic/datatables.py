@@ -2,10 +2,12 @@ from clld.web import datatables
 from clld.web.datatables.base import LinkCol, Col, LinkToMapCol, IdCol, DetailsRowLinkCol
 from clld.web.datatables.value import Values
 from clld.web.datatables.parameter import Parameters
+from clld.web.util.htmllib import HTML
 from clld.db.models import common
 from clld.db.util import get_distinct_values
 
 from uralic import models
+from uralic import util
 
 
 class Languages(datatables.Languages):
@@ -33,6 +35,16 @@ class FeatureIDCol(LinkCol):
         return item.valueset.parameter
 
 
+class ExampleCol(Col):
+    __kw__ = dict(bSearchable=False, bSortable=False)
+
+    def format(self, item):
+        if util.glossed_examples(item):
+            return DetailsRowLinkCol(self.dt, '', button_text='Example').format(item)
+        #return HTML.ul(*util.glossed_examples(item), class_='unstyled')
+        return ''
+
+
 class Datapoints(Values):
     # exclude the column of "Admixture coefficients"
     def base_query(self, query):
@@ -47,6 +59,7 @@ class Datapoints(Values):
         # print(IdCol(self, 'id').get_attrs())
         return res + [
             Col(self, 'description', sTitle='Comment'),
+            ExampleCol(self, 'example'),
             FeatureIDCol(self, 'id', get_object=lambda i: i.valueset.parameter)]
 
 
