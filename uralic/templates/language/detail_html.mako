@@ -16,4 +16,7 @@ ${request.get_datatable('values', h.models.Value, language=ctx).render()}
         ${h.format_coordinates(ctx)}
     </%util:well>
     % endif
+    <%util:well title="Sources">
+        ${util.sources_list(sorted(list(ctx.sources), key=lambda s: s.name))}
+    </%util:well>
 </%def>

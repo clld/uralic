@@ -72,8 +72,12 @@ def main(args):
             name=row['name'],
         )
 
+    for rec in bibtex.Database.from_file(args.cldf.bibpath, lowercase=True):
+        data.add(common.Source, rec.id, _obj=bibtex2source(rec))
+
     n2l, n2v = {}, {}
-    for lang in args.cldf.iter_rows('LanguageTable', 'id', 'glottocode', 'name', 'latitude', 'longitude'):
+    for lang in args.cldf.iter_rows(
+            'LanguageTable', 'id', 'glottocode', 'name', 'latitude', 'longitude', 'source'):
         n2l[lang['name'].replace(' ', '_').replace('-', '_')] = lang['id']
         lang['glottocode'] = {
             'Hill_Mari': 'kozy1238',
@@ -94,6 +98,9 @@ def main(args):
         n2v[v.name] = v
         if lang['glottocode']:
             add_language_codes(data, v, lang['ISO639P3code'], glottocode=lang['glottocode'])
+        DBSession.flush()
+        for src in lang['source']:
+            DBSession.add(common.LanguageSource(language_pk=v.pk, source_pk=data['Source'][src].pk))
 
     tree = get_tree().newick_tree
     phylo = Phylogeny(id='p', name='Uralic languages')
@@ -108,9 +115,6 @@ def main(args):
     tree.visit(rename)
     phylo.newick = tree.newick + ';'
     DBSession.add(phylo)
-
-    for rec in bibtex.Database.from_file(args.cldf.bibpath, lowercase=True):
-        data.add(common.Source, rec.id, _obj=bibtex2source(rec))
 
     refs = collections.defaultdict(list)
 
