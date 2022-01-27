@@ -1,6 +1,6 @@
 from clld.interfaces import ILanguage, IIndex, IParameter
 from clld.web.adapters.geojson import GeoJson, GeoJsonParameter
-from clld.web.maps import ParameterMap, Layer, LanguageMap, Legend
+from clld.web.maps import Map, ParameterMap, Layer, LanguageMap, Legend
 from clld.web.util.htmllib import HTML
 from clld.web.util import helpers
 from clld.db.meta import DBSession
@@ -115,15 +115,29 @@ class VarietyMap(LanguageMap):
     def get_layers(self):
         yield Layer(
             'areas',
-            'Speakeer Area',
+            'Speaker Area',
             dict(type='FeatureCollection', features=[self.ctx.jsondata['feature']]))
         for la in LanguageMap.get_layers(self):
             yield la
 
 
+class VarietiesMap(Map):
+
+    """Map showing a single language."""
+
+    def get_layers(self):
+         yield Layer(
+            'areas',
+            'Speaker Areas',
+            self.req.route_url('languages_alt', ext='areas.geojson'))
+         for la in Map.get_layers(self):
+            yield la
+
+
 def includeme(config):
-    #config.register_adapter(GeoJsonAreas, ILanguage, IIndex)
+    config.register_adapter(GeoJsonAreas, ILanguage, IIndex, name=GeoJsonAreas.extension)
     config.register_map('parameter', FeatureMap)
     #config.register_map('languages', AdmixtureMap)
+    config.register_map('languages', VarietiesMap)
     config.register_map('language', VarietyMap)
     config.register_adapter(GeoJsonFeature, IParameter, name=GeoJson.mimetype)

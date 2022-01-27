@@ -56,7 +56,7 @@
 
 <h2>${ctx.name}</h2>
 
-${h.link(req, ctx.contribution)}
+<p>${h.link(req, ctx.contribution)} feature ${ctx.id}</p>
 
 % if ctx.markup_description:
 <div>${ctx.markup_description|n}</div>
@@ -73,6 +73,7 @@ ${request.get_datatable('values', h.models.Value, parameter=ctx).render()}
 
 
 <div id="tree-container">
+    <h4>Values for this feature plotted on the phylogenetic tree</h4>
 ${tree.render()|n}
 </div>
 

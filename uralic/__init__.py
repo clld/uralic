@@ -40,7 +40,7 @@ def main(global_config, **settings):
 
     # this customize the order of each page
     config.register_menu(
-        ('dataset', functools.partial(menu_item, 'dataset', label='Uralic Areal Typology')),
+        ('dataset', functools.partial(menu_item, 'dataset', label='UraTyp')),
         ('languages', functools.partial(menu_item, 'languages')),
         ('parameters', functools.partial(menu_item, 'parameters')),
         # ('StructureDataset', lambda ctx, req: (req.route_url(

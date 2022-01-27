@@ -46,13 +46,15 @@ def main(args):
              for r in geo.iter_rows('LanguageTable', 'id', 'glottocode')}
     areas = {langs[r['languageReference']]: r['SpeakerArea']
              for r in geo.iter_rows('areas.csv', 'languageReference')}
+
+    areas['west1760'] = areas['livv1244']
     data = Data()
     data.add(
         common.Dataset,
         uralic.__name__,
         id=uralic.__name__,
         name='UraTyp',
-        description="Uralic Areal Typology",
+        description="Uralic Typological database - UraTyp",
         domain='uralic.clld.org',
         publisher_name="Max Planck Institute for Evolutionary Anthropology",
         publisher_place="Leipzig",
@@ -63,6 +65,7 @@ def main(args):
             'license_name': 'Creative Commons Attribution 4.0 International License'},
 
     )
+
 
     for row in args.cldf.iter_rows('ContributionTable', 'id', 'name'):
         data.add(
@@ -93,7 +96,7 @@ def main(args):
             glottocode=lang['glottocode'],
             # edit the models.py by adding a subfamily
             subfamily=lang['Subfamily'],
-            jsondata=dict(feature=areas[lang['glottocode'] or 'EastMansi'])
+            jsondata=dict(feature=areas[lang['glottocode'] if lang['glottocode'] != 'east2879' else 'EastMansi'])
         )
         n2v[v.name] = v
         if lang['glottocode']:

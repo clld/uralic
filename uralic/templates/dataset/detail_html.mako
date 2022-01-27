@@ -2,10 +2,18 @@
 
 <%def name="sidebar()">
     <div class="well">
-        <h3>Sidebar</h3>
-        <p>
-            Content
-        </p>
+        <h3>How to cite UraTyp datasets</h3>
+        <p>Please cite the submitted manuscript</p>
+        <blockquote>
+            Miina Norvik, Yingqi Jing, Michael Dunn, Robert Forkel, Terhi Honkola, Gerson Klumpp, Richard Kowalik, Helle
+            Metslang, Karl Pajusalu, Minerva Piha, Eva Saar, Sirkka Saarinen and Outi Vesakoski: Uralic typology in the
+            light of new comprehensive data sets (submitted ms to Journal of Uralic Linguistics)
+        </blockquote>
+        <p>as well as the datasets</p>
+        <blockquote>
+            <a href="https://doi.org/10.5281/zenodo.5236365">
+                <img src="https://zenodo.org/badge/DOI/10.5281/zenodo.5236365.svg" alt="DOI: 10.5281/zenodo.5236365"></a>
+        </blockquote>
     </div>
 </%def>
 
@@ -32,16 +40,6 @@
     The database can be explored in several ways. One option is browse the interactive database at https://uralic.clld.org according to languages. Clicking on “Languages” on the navigation bar and then selecting a language enables one to see all the answers provided for the respective language. Another option is to search according to “Parameters” and study the general picture parameter by parameter. Clicking on the name of the parameter takes to the general description and map, while the box “values” gives a quick overview of the general distribution. It is also possible to explore the “Sources” that were used for writing the descriptions of parameters or giving linguistic examples for UT questions.
 </p>
 
-<h3>How to cite UraTyp</h3>
-
-<p>
-    If you use UraTyp data, please cite the paper introducing the dataset
-</p>
-<blockquote>Norvik et al. 2021. The Uralic typology in the light of new comprehensive data sets.</blockquote>
-<p>
-    as well as the dataset itself
-</p>
-<blockquote>DOI</blockquote>
 
 <h3>Funders and supporters</h3>
 <p>
