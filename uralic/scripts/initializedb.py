@@ -3,6 +3,7 @@ import itertools
 import collections
 import pathlib
 
+from nameparser import HumanName
 from nexus import NexusReader
 from markdown import markdown
 from pycldf import Sources, Dataset
@@ -14,6 +15,7 @@ from clld.db.models import common
 from clld.lib import bibtex
 from csvw.dsv import reader
 from clld_phylogeny_plugin.models import Phylogeny, LanguageTreeLabel, TreeLabel
+from clldutils.misc import slug
 
 import uralic
 # inherited from models.py
@@ -49,7 +51,7 @@ def main(args):
 
     areas['west1760'] = areas['livv1244']
     data = Data()
-    data.add(
+    ds = data.add(
         common.Dataset,
         uralic.__name__,
         id=uralic.__name__,
@@ -66,6 +68,12 @@ def main(args):
 
     )
 
+    for i, name in enumerate(['Miina Norvik', 'Yingqi Jing', 'Robert Forkel']):
+        common.Editor(
+            dataset=ds,
+            ord=i,
+            contributor=common.Contributor(id=slug(HumanName(name).last), name=name)
+        )
 
     for row in args.cldf.iter_rows('ContributionTable', 'id', 'name'):
         data.add(
@@ -191,7 +199,7 @@ def main(args):
             language=data['Variety'][ex['languageReference']],
             name=ex['Primary_Text'],
             analyzed='\t'.join(ex['Analyzed_Word']),
-            original_script='\t'.join(ex['Analyzed_Word_IPA']),
+            original_script=ex['Original_Script'],
             gloss='\t'.join(ex['Gloss']),
             description=ex['Translated_Text'],
         )
@@ -223,8 +231,8 @@ def main(args):
             valueset=vs,
             domainelement=data['DomainElement'][val['codeReference'] if val['value'] else '{}-?'.format(val['parameterReference'])],
         )
-        if val['exampleReference']:
-            DBSession.add(common.ValueSentence(value=v, sentence=data['Sentence'][val['exampleReference']]))
+        for eid in val['exampleReference']:
+            DBSession.add(common.ValueSentence(value=v, sentence=data['Sentence'][eid]))
 
     for row in get_admixture():
         lid = n2l[row['lang']]

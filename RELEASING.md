@@ -4,7 +4,7 @@
 
 * create the database (with data repo in `./uratyp/`)
   ```
-  clld initdb --cldf ../uratyp/ --glottolog <local-glottolog-repo> development.ini
+  clld initdb --cldf ../uratyp/cldf/StructureDataset-metadata.json --glottolog ~/projects/glottolog/glottolog development.ini
   ```
 
 * run tests
