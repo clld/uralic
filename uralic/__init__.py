@@ -47,6 +47,7 @@ def main(global_config, **settings):
         #     'contribution', id='StructureDataset'), 'Features')),
         # ('Wordlist', lambda ctx, req: (req.route_url('contribution', id='Wordlist'), 'Wordlist')),
         ('sources', functools.partial(menu_item, 'sources')),
+        ('contributors', functools.partial(menu_item, 'contributors')),
         # ('about', lambda c, r: (r.route_url('about'), 'About')),
     )
 

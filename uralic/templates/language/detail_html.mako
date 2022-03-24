@@ -10,6 +10,14 @@ ${request.get_datatable('values', h.models.Value, language=ctx).render()}
 <%def name="sidebar()">
     ${util.codes()}
     <div style="clear: right;"> </div>
+    <%util:well title="Language experts">
+        <dl>
+            % for cid, experts in ctx.iter_grouped_experts():
+                <dt>${cid}</dt>
+                <dd>${', '.join([e.contributor.name for e in experts])}</dd>
+            % endfor
+        </dl>
+    </%util:well>
     % if ctx.latitude is not None:
     <%util:well>
         ${request.map.render()}

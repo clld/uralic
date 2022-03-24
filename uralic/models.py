@@ -1,3 +1,5 @@
+import itertools
+
 from zope.interface import implementer
 from sqlalchemy import (
     Column,
@@ -39,6 +41,25 @@ class Variety(CustomModelMixin, common.Language):
     @property
     def color(self):
         return SUBFAMILIES[self.subfamily]
+
+    def iter_grouped_experts(self):
+        for cid, ex in itertools.groupby(
+            sorted(self.experts, key=lambda e: (e.contribution.id, e.ord)),
+            lambda e: e.contribution.id
+        ):
+            yield cid, list(ex)
+
+
+class LanguageExpert(Base):
+    __table_args__ = (UniqueConstraint('language_pk', 'contributor_pk', 'contribution_pk'),)
+
+    language_pk = Column(Integer, ForeignKey('language.pk'), nullable=False)
+    contributor_pk = Column(Integer, ForeignKey('contributor.pk'), nullable=False)
+    contribution_pk = Column(Integer, ForeignKey('contribution.pk'), nullable=False)
+    ord = Column(Integer)
+    language = relationship(common.Language, backref='experts')
+    contributor = relationship(common.Contributor, backref='experts')
+    contribution = relationship(common.Contribution, backref='experts')
 
 
 @implementer(interfaces.IParameter)

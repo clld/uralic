@@ -2,7 +2,9 @@ from clld.web import datatables
 from clld.web.datatables.base import LinkCol, Col, LinkToMapCol, IdCol, DetailsRowLinkCol
 from clld.web.datatables.value import Values
 from clld.web.datatables.parameter import Parameters
+from clld.web.datatables.contributor import Contributors
 from clld.web.util.htmllib import HTML
+from clld.web.util.helpers import link
 from clld.db.models import common
 from clld.db.util import get_distinct_values
 
@@ -83,8 +85,29 @@ class Params(Parameters):
         ]
 
 
+class Contribs(Col):
+    __kw__ = dict(bSearchable=False, bSortable=False)
+
+    def format(self, item):
+        return HTML.ul(*[HTML.li(link(self.dt.req, le.language))
+                         for le in item.experts if le.contribution.id == self.contribution])
+
+
+class Experts(Contributors):
+    def base_query(self, query):
+        return query.join(models.LanguageExpert).distinct()
+
+    def col_defs(self):
+        return [
+            Col(self, 'name'),
+            Contribs(self, 'ut_languages', sTitle='UT languages', contribution='UT'),
+            Contribs(self, 'gb_languages', sTitle='GB languages', contribution='GB'),
+        ]
+
+
 def includeme(config):
     """register custom datatables"""
+    config.register_datatable('contributors', Experts)
     config.register_datatable('parameters', Params)
     config.register_datatable('languages', Languages)
     config.register_datatable('values', Datapoints)

@@ -68,11 +68,19 @@ def main(args):
 
     )
 
-    for i, name in enumerate(['Miina Norvik', 'Yingqi Jing', 'Robert Forkel']):
+    for row in args.cldf['contributors.csv']:
+        data.add(
+            common.Contributor,
+            row['ID'],
+            id=row['ID'],
+            name=row['Name']
+        )
+
+    for i, name in enumerate(['norvikmiina', 'Yingqi Jing', 'Robert Forkel']):
         common.Editor(
             dataset=ds,
             ord=i,
-            contributor=common.Contributor(id=slug(HumanName(name).last), name=name)
+            contributor=data['Contributor'].get(name) or common.Contributor(id=slug(HumanName(name).last), name=name)
         )
 
     for row in args.cldf.iter_rows('ContributionTable', 'id', 'name'):
@@ -106,6 +114,14 @@ def main(args):
             subfamily=lang['Subfamily'],
             jsondata=dict(feature=areas[lang['glottocode'] if lang['glottocode'] != 'east2879' else 'EastMansi'])
         )
+        for contrib in ['UT', 'GB']:
+            for i, cid in enumerate(lang['{}_Experts'.format(contrib)], start=1):
+                DBSession.add(models.LanguageExpert(
+                    ord=i,
+                    language=v,
+                    contribution=data['Contribution'][contrib],
+                    contributor=data['Contributor'][cid],
+                ))
         n2v[v.name] = v
         if lang['glottocode']:
             add_language_codes(data, v, lang['ISO639P3code'], glottocode=lang['glottocode'])
@@ -269,3 +285,5 @@ def prime_cache(args):
     This procedure should be separate from the db initialization, because
     it will have to be run periodically whenever data has been updated.
     """
+    for lang in DBSession.query(common.Language):
+        lang.name = lang.name.replace('_', ' ')
