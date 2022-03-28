@@ -41,7 +41,7 @@
 <div class="span4" style="float: right; margin-top: 1em; clear: right">
     <%util:well title="Values">
         <table class="table table-condensed">
-            % for de in ctx.domain:
+            % for de in sorted(ctx.domain, key=lambda de: de.pk):
             <tr>
                 <td>${h.map_marker_img(req, de)}</td>
                 <td>${de.name}</td>
