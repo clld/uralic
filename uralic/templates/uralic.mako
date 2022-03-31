@@ -1,12 +1,11 @@
 <%inherit file="app.mako"/>
 
-##
-## define app-level blocks:
-##
 <%block name="header">
-    ##<a href="${request.route_url('dataset')}">
-    ##    <img src="${request.static_url('uralic:static/header.gif')}"/>
-    ##</a>
+##<div id="header">
+##    <a href="${request.resource_url(request.dataset)}">
+##        <img src="${request.static_url('uralic:static/URHIA_banner-scaled.jpg')}"/>
+##    </a>
+##</div>
 </%block>
 
 ${next.body()}

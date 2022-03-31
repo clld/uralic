@@ -56,7 +56,7 @@ def main(args):
         uralic.__name__,
         id=uralic.__name__,
         name='UraTyp',
-        description="Uralic Typological database - UraTyp",
+        description="Uralic Areal Typology Online",
         domain='uralic.clld.org',
         publisher_name="Max Planck Institute for Evolutionary Anthropology",
         publisher_place="Leipzig",
