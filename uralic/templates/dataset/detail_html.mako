@@ -17,19 +17,16 @@
     </div>
 </%def>
 
-<h2>Welcome to the Uralic Typological database – UraTyp</h2>
+<h2>Welcome to Uralic Areal Typology Online</h2>
 
 <p>
-    The UraTyp database contains
-    ${feature_count}
-    features mainly on morphology, syntax, and phonology collected from
-    ${language_count}
-    Uralic languages/language varieties. The database grew out from the cooperation with
-    the ${h.external_link('https://glottobank.org', label='Grambank team')} who set out to collect data from about
-    half of the world’s languages.
+    Uralic Areal Typology Online comprises at the moment UraTyp - a typological database with ${feature_count} features mainly on
+    morphology, syntax, and phonology collected from ${language_count} Uralic languages/language varieties. The database
+    grew out from the cooperation with the Grambank team who set out to collect data from about half of the world's languages.
     The goal of building the UraTyp database was to create a family-specific database.
 </p>
 
+<h3>UraTyp</h3>
 <p>
     The UraTyp database contains information collected with two separate questionnaires.
     ${feature_count_gb}
@@ -53,7 +50,7 @@
     as everyone else interested in the Uralic languages.
 </p>
 
-<h3>How to use UraTyp</h3>
+<h4>How to use UraTyp</h4>
 <p>
     The database can be explored in several ways. One option is to browse the interactive database at
     https://uralic.clld.org according to languages.
@@ -71,9 +68,12 @@
 
 
 <h3>Funders and supporters</h3>
-<p>
-    Kipot ja kielet (‘Pots and languages’) project, funded by the University of Turku (2018–2020), the URKO (Uralilainen Kolmio = ‘Uralic Triangle’) project, funded by the Academy of Finland (2020–2022); The Collegium for Transdisciplinary Studies in Archeology, Genetics and Linguistics, University of Tartu (2018–)
-</p>
+<ul>
+    <li>Kipot ja kielet (‘Pots and languages’) project, funded by the University of Turku (2018–2020),</li>
+    <li>the URKO (Uralilainen Kolmio = ‘Uralic Triangle’) project, funded by the Academy of Finland (2020–2022);</li>
+    <li>The Collegium for Transdisciplinary Studies in Archeology, Genetics and Linguistics, University of Tartu (2018–)</li>
+    <li>BEDLAN project (Biological Evolution and Diversification of Languages), funded by Kone Foundation (2013-2016, 2017-2022)</li>
+</ul>
 
 <h3>Terms of use</h3>
 
