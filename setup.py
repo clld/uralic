@@ -19,7 +19,7 @@ setup(
     include_package_data=True,
     zip_safe=False,
     install_requires=[
-        'clld>=9.0.2',  # >=7.0
+        'clld>=9.2.1',
         'clld-phylogeny-plugin',
         'clld-glottologfamily-plugin>=4.0',
         'pyglottolog',
