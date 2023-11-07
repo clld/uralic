@@ -67,6 +67,9 @@ class Feature(CustomModelMixin, common.Parameter):
     pk = Column(Integer, ForeignKey('parameter.pk'), primary_key=True)
     # sortkey = Column(Unicode)
     # concepticon_id = Column(Unicode)
+
+    type = Column(Unicode)  # grammatical|lexical
+
     category = Column(Unicode)
     contribution_pk = Column(Integer, ForeignKey('contribution.pk'))
-    contribution = relationship(common.Contribution, backref='parameters')
+    contribution = relationship(common.Contribution, backref='parameters')  # UT, GB, UraLex

@@ -44,10 +44,24 @@ def get_admixture():
 def main(args):
     geo = Dataset.from_metadata(args.cldf.directory.parent.parent /
                                 'rantanenurageo' / 'cldf' / 'Generic-metadata.json')
+    lex = Dataset.from_metadata(args.cldf.directory.parent.parent /
+                                'uralex' / 'cldf' / 'cldf-metadata.json')
     langs = {r['id']: r['glottocode'] or r['id']
              for r in geo.iter_rows('LanguageTable', 'id', 'glottocode')}
     areas = {langs[r['languageReference']]: r['SpeakerArea']
              for r in geo.iter_rows('areas.csv', 'languageReference')}
+
+    uralexlangs = {r['Glottocode']: r['Name'] for r in lex['LanguageTable']}
+    uratyplangs = {r['Glottocode']: r['Name'] for r in args.cldf['LanguageTable']}
+    #print(len(set(uralexlangs).intersection(uratyplangs)))
+    #print('Only in UraTyp:')
+    #for l in set(uratyplangs) - set(uralexlangs):
+    #    print(l, uratyplangs[l])
+    #print('')
+    #print('Only in UraLex:')
+    #for l in set(uralexlangs) - set(uratyplangs):
+    #    print(l, uralexlangs[l])
+    #return
 
     areas['west1760'] = areas['livv1244']
     data = Data()
@@ -75,6 +89,10 @@ def main(args):
             id=row['ID'],
             name=row['Name']
         )
+    # overlap: Michael, Robert, Outi
+    # FIXME
+    #for row in lex['contributors.csv']:
+    #    pass
 
     for i, name in enumerate(['norvikmiina', 'Yingqi Jing', 'Robert Forkel']):
         common.Editor(
@@ -90,11 +108,19 @@ def main(args):
             id=row['id'],
             name=row['name'],
         )
+    data.add(
+        common.Contribution,
+        'uralex',
+        id='uralex',
+        name='Uralic basic vocabulary with cognate and loanword information',
+    )
 
     for rec in bibtex.Database.from_file(args.cldf.bibpath, lowercase=True):
         data.add(common.Source, rec.id, _obj=bibtex2source(rec))
+    for rec in bibtex.Database.from_file(lex.bibpath, lowercase=True):
+        data.add(common.Source, rec.id, _obj=bibtex2source(rec))
 
-    n2l, n2v = {}, {}
+    n2l, n2v, les = {}, {}, set()
     for lang in args.cldf.iter_rows(
             'LanguageTable', 'id', 'glottocode', 'name', 'latitude', 'longitude', 'source'):
         n2l[lang['name'].replace(' ', '_').replace('-', '_')] = lang['id']
@@ -116,12 +142,15 @@ def main(args):
         )
         for contrib in ['UT', 'GB']:
             for i, cid in enumerate(lang['{}_Experts'.format(contrib)], start=1):
-                DBSession.add(models.LanguageExpert(
-                    ord=i,
-                    language=v,
-                    contribution=data['Contribution'][contrib],
-                    contributor=data['Contributor'][cid],
-                ))
+                leid = (v.id, contrib, cid)
+                if leid not in les:
+                    DBSession.add(models.LanguageExpert(
+                        ord=i,
+                        language=v,
+                        contribution=data['Contribution'][contrib],
+                        contributor=data['Contributor'][cid],
+                    ))
+                    les.add(leid)
         n2v[v.name] = v
         if lang['glottocode']:
             add_language_codes(data, v, lang['ISO639P3code'], glottocode=lang['glottocode'])

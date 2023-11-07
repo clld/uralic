@@ -28,6 +28,13 @@
 </%block>
 
 <%def name="sidebar()">
+    <div class="alert alert-error">
+        This website currently display the
+        <a href="https://github.com/cldf-datasets/uratyp/releases/tag/v2.0.0-rc1">
+            release candidate for version 2.0 of the UraTyp dataset
+        </a>.
+        The citation and download links on the site still refer to version 1.
+    </div>
     <div class="well">
         <h3>How to cite UraTyp datasets</h3>
         <p>Please cite the submitted manuscript</p>
