@@ -10,7 +10,7 @@ ${request.get_datatable('values', h.models.Value, language=ctx).render()}
 <%def name="sidebar()">
     ${util.codes()}
     <div style="clear: right;"> </div>
-    <%util:well title="Language experts">
+    <%util:well title="Contributors">
         <dl>
             % for cid, experts in ctx.iter_grouped_experts():
                 <dt>${cid}</dt>
