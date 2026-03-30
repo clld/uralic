@@ -4,17 +4,15 @@ import collections
 import pathlib
 
 from nameparser import HumanName
-from nexus import NexusReader
 from markdown import markdown
 from pycldf import Sources, Dataset
+from pycldf.orm import Language
 from clldutils.misc import nfilter
 from clldutils.color import qualitative_colors
 from clld.cliutil import Data, bibtex2source, add_language_codes
 from clld.db.meta import DBSession
 from clld.db.models import common
 from clld.lib import bibtex
-from csvw.dsv import reader
-from clld_phylogeny_plugin.models import Phylogeny, LanguageTreeLabel, TreeLabel
 from clldutils.misc import slug
 
 import uralic
@@ -29,27 +27,21 @@ def render_description(s):
     return s
 
 
-def get_tree():
-    nex = NexusReader(pathlib.Path(uralic.__file__).parent.parent.parent / 'Uralic_MCC.nex')
-    nex.trees.detranslate()
-    return nex.trees.trees[0]
-
-
-def get_admixture():
-    admix_dic = reader(
-        pathlib.Path(uralic.__file__).parent.parent.parent / 'admixture_coef.csv', dicts=True)
-    return admix_dic
-
-
 def main(args):
-    geo = Dataset.from_metadata(args.cldf.directory.parent.parent /
-                                'rantanenurageo' / 'cldf' / 'Generic-metadata.json')
+    #
+    # FIXME: use glottography dataset!?
+    #
+    geo = Dataset.from_metadata(pathlib.Path('/home/robert/projects/glottography') / 'rantanen2021uralic' / 'cldf' / 'Generic-metadata.json')
+    # hung1274 from asher2007world/cldf/traditional
+    # akka1237 from raw/Geographical\ database\ of\ the\ Uralic\ languages/Geospatial\ datasets/Language\ distributions/Original\ distributions/Saami/Saami/AkkalaSaami_traditional_MustonenMustonen.shp
+    # ters1235 auch Mustonen!
     lex = Dataset.from_metadata(args.cldf.directory.parent.parent /
                                 'uralex' / 'cldf' / 'cldf-metadata.json')
-    langs = {r['id']: r['glottocode'] or r['id']
-             for r in geo.iter_rows('LanguageTable', 'id', 'glottocode')}
-    areas = {langs[r['languageReference']]: r['SpeakerArea']
-             for r in geo.iter_rows('areas.csv', 'languageReference')}
+    langs = {r.cldf.glottocode: r.speaker_area_as_geojson_feature
+             for r in geo.objects('LanguageTable')}
+    assert 'soyk1238' in langs
+    #areas = {langs[r['languageReference']]: r['SpeakerArea']
+    #         for r in geo.iter_rows('areas.csv', 'languageReference')}
 
     uralexlangs = {r['Glottocode']: r['Name'] for r in lex['LanguageTable']}
     uratyplangs = {r['Glottocode']: r['Name'] for r in args.cldf['LanguageTable']}
@@ -63,7 +55,7 @@ def main(args):
     #    print(l, uralexlangs[l])
     #return
 
-    areas['west1760'] = areas['livv1244']
+    langs['west1760'] = langs['livv1244']
     data = Data()
     ds = data.add(
         common.Dataset,
@@ -128,6 +120,8 @@ def main(args):
             'Hill_Mari': 'kozy1238',
         }.get(lang['name'], lang['glottocode'])
         assert lang['glottocode'] or lang['name'] == 'East_Mansi'
+        if lang['glottocode'] not in langs:
+            print(lang['glottocode'])
         v = data.add(
             models.Variety,
             lang['id'],
@@ -138,7 +132,7 @@ def main(args):
             glottocode=lang['glottocode'],
             # edit the models.py by adding a subfamily
             subfamily=lang['Subfamily'],
-            jsondata=dict(feature=areas[lang['glottocode'] if lang['glottocode'] != 'east2879' else 'EastMansi'])
+            #jsondata=dict(feature=langs.get(lang['glottocode']))
         )
         for contrib in ['UT', 'GB']:
             for i, cid in enumerate(lang['{}_Experts'.format(contrib)], start=1):
@@ -157,20 +151,6 @@ def main(args):
         DBSession.flush()
         for src in lang['source']:
             DBSession.add(common.LanguageSource(language_pk=v.pk, source_pk=data['Source'][src].pk))
-
-    tree = get_tree().newick_tree
-    phylo = Phylogeny(id='p', name='Uralic languages')
-
-    def rename(n):
-        if n.name:
-            #name = n.name
-            #n.name = n2l[name]
-            LanguageTreeLabel(
-                language=n2v[n.name], treelabel=TreeLabel(id=n.name, name=n.name, phylogeny=phylo))
-
-    tree.visit(rename)
-    phylo.newick = tree.newick + ';'
-    DBSession.add(phylo)
 
     refs = collections.defaultdict(list)
 
@@ -244,7 +224,7 @@ def main(args):
             language=data['Variety'][ex['languageReference']],
             name=ex['Primary_Text'],
             analyzed='\t'.join(ex['Analyzed_Word']),
-            original_script=ex['Original_Script'],
+            #original_script=ex['Original_Script'],
             gloss='\t'.join(ex['Gloss']),
             description=ex['Translated_Text'],
         )
@@ -278,28 +258,6 @@ def main(args):
         )
         for eid in val['exampleReference']:
             DBSession.add(common.ValueSentence(value=v, sentence=data['Sentence'][eid]))
-
-    for row in get_admixture():
-        lid = n2l[row['lang']]
-        vs = data.add(
-            common.ValueSet,
-            '{}-adm'.format(lid),
-            id='{}-adm'.format(lid),
-            language=data['Variety'][lid],
-            parameter=data['Feature']['adm'],
-            contribution=data['Contribution']['UT'],
-        )
-        for k in ['C1', 'C2', 'C3', 'C4']:#['Finnic ancestry', 'Ob-Ugric ancestry', 'Volgaic ancestry', 'Saami ancestry']:
-            v = round(float(row[k]), 3)
-            data.add(
-                common.Value,
-                '{}-{}-{}'.format(lid, 'adm', k),
-                id='{}-{}-{}'.format(lid, 'adm', k),
-                name=str(v),
-                frequency=100 * v,  # admixture proportions
-                valueset=vs,
-                domainelement=data['DomainElement'][k],
-            )
 
     for (vsid, sid), pages in refs.items():
         DBSession.add(common.ValueSetReference(

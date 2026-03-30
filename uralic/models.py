@@ -27,7 +27,7 @@ SUBFAMILIES = {
     'Mordvin': '#80c9ac',
     'Permic': '#440154',  # purple
     'Saami': '#35B779',  # green
-    'Samoyed': '#FDE725',  # yellow
+    'Samoyedic': '#FDE725',  # yellow
     'Ugric': '#21908C',  # light green
 }
 
