@@ -63,6 +63,8 @@ def main(args):
         publisher_url="http://www.eva.mpg.de",
         license="http://creativecommons.org/licenses/by/4.0/",
         jsondata={
+            'citation': args.cldf.properties['dc:bibliographicCitation'],
+            'readme': args.cldf.properties['dc:description'],
             'license_icon': 'cc-by.png',
             'license_name': 'Creative Commons Attribution 4.0 International License'},
 
@@ -76,7 +78,7 @@ def main(args):
             name=row['Name']
         )
 
-    for i, name in enumerate(['norvikmiina', 'forkelrobert']):
+    for i, name in enumerate(['norvikmiina', 'Robert Forkel']):
         common.Editor(
             dataset=ds,
             ord=i,
