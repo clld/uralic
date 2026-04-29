@@ -9,10 +9,6 @@ from uralic.models import Feature
 from uralic.adapters import FeatureTree
 
 
-def parameter_detail_html(request=None, context=None, **kw):
-    return dict(tree=FeatureTree(Phylogeny.get('p'), request, context.id))
-
-
 def dataset_detail_html(request=None, context=None, **kw):
     return dict(
         feature_count=DBSession.query(common.Parameter).count() - 1,

@@ -6,9 +6,9 @@ import pathlib
 from nameparser import HumanName
 from markdown import markdown
 from pycldf import Sources, Dataset
-from pycldf.orm import Language
 from clldutils.misc import nfilter
 from clldutils.color import qualitative_colors
+from clldutils.jsonlib import load
 from clld.cliutil import Data, bibtex2source, add_language_codes
 from clld.db.meta import DBSession
 from clld.db.models import common
@@ -27,34 +27,28 @@ def render_description(s):
     return s
 
 
+def read_shapes(p):
+    from shapely import unary_union
+    from shapely.geometry import shape
+
+    shapes = [shape(s['geometry']) for s in load(p)['features']]
+    return {
+        "type": "Feature",
+        'properties': {'family': 'Uralic'},
+        "geometry": unary_union(shapes).__geo_interface__}
+
+
 def main(args):
-    #
-    # FIXME: use glottography dataset!?
-    #
-    geo = Dataset.from_metadata(pathlib.Path('/home/robert/projects/glottography') / 'rantanen2021uralic' / 'cldf' / 'Generic-metadata.json')
-    # hung1274 from asher2007world/cldf/traditional
-    # akka1237 from raw/Geographical\ database\ of\ the\ Uralic\ languages/Geospatial\ datasets/Language\ distributions/Original\ distributions/Saami/Saami/AkkalaSaami_traditional_MustonenMustonen.shp
-    # ters1235 auch Mustonen!
-    lex = Dataset.from_metadata(args.cldf.directory.parent.parent /
-                                'uralex' / 'cldf' / 'cldf-metadata.json')
+    rantanen = pathlib.Path('/home/robert/projects/glottography') / 'rantanen2021uralic'
+    geo = Dataset.from_metadata(rantanen / 'cldf' / 'Generic-metadata.json')
+    geo2 = Dataset.from_metadata(pathlib.Path(
+        '/home/robert/projects/glottography') / 'asher2007world' / 'cldf' / 'traditional' / 'traditional-metadata.json')
+
     langs = {r.cldf.glottocode: r.speaker_area_as_geojson_feature
              for r in geo.objects('LanguageTable')}
-    assert 'soyk1238' in langs
-    #areas = {langs[r['languageReference']]: r['SpeakerArea']
-    #         for r in geo.iter_rows('areas.csv', 'languageReference')}
-
-    uralexlangs = {r['Glottocode']: r['Name'] for r in lex['LanguageTable']}
-    uratyplangs = {r['Glottocode']: r['Name'] for r in args.cldf['LanguageTable']}
-    #print(len(set(uralexlangs).intersection(uratyplangs)))
-    #print('Only in UraTyp:')
-    #for l in set(uratyplangs) - set(uralexlangs):
-    #    print(l, uratyplangs[l])
-    #print('')
-    #print('Only in UraLex:')
-    #for l in set(uralexlangs) - set(uratyplangs):
-    #    print(l, uralexlangs[l])
-    #return
-
+    langs['akka1237'] = read_shapes(pathlib.Path(__file__).parent / 'akkalasaami.geojson')
+    langs['ters1235'] = read_shapes(pathlib.Path(__file__).parent / 'tersaami.geojson')
+    langs['hung1274'] = geo2.get_object('LanguageTable', 'hung1274').speaker_area_as_geojson_feature
     langs['west1760'] = langs['livv1244']
     data = Data()
     ds = data.add(
@@ -81,12 +75,8 @@ def main(args):
             id=row['ID'],
             name=row['Name']
         )
-    # overlap: Michael, Robert, Outi
-    # FIXME
-    #for row in lex['contributors.csv']:
-    #    pass
 
-    for i, name in enumerate(['norvikmiina', 'Yingqi Jing', 'Robert Forkel']):
+    for i, name in enumerate(['norvikmiina', 'forkelrobert']):
         common.Editor(
             dataset=ds,
             ord=i,
@@ -100,17 +90,9 @@ def main(args):
             id=row['id'],
             name=row['name'],
         )
-    data.add(
-        common.Contribution,
-        'uralex',
-        id='uralex',
-        name='Uralic basic vocabulary with cognate and loanword information',
-    )
 
     for rec in bibtex.Database.from_file(args.cldf.bibpath, lowercase=True):
-        data.add(common.Source, rec.id, _obj=bibtex2source(rec))
-    for rec in bibtex.Database.from_file(lex.bibpath, lowercase=True):
-        data.add(common.Source, rec.id, _obj=bibtex2source(rec))
+        data.add(common.Source, rec.id, _obj=bibtex2source(rec, sluggify_id=False))
 
     n2l, n2v, les = {}, {}, set()
     for lang in args.cldf.iter_rows(
@@ -120,8 +102,6 @@ def main(args):
             'Hill_Mari': 'kozy1238',
         }.get(lang['name'], lang['glottocode'])
         assert lang['glottocode'] or lang['name'] == 'East_Mansi'
-        if lang['glottocode'] not in langs:
-            print(lang['glottocode'])
         v = data.add(
             models.Variety,
             lang['id'],
@@ -132,7 +112,7 @@ def main(args):
             glottocode=lang['glottocode'],
             # edit the models.py by adding a subfamily
             subfamily=lang['Subfamily'],
-            #jsondata=dict(feature=langs.get(lang['glottocode']))
+            jsondata=dict(feature=langs[lang['glottocode']])
         )
         for contrib in ['UT', 'GB']:
             for i, cid in enumerate(lang['{}_Experts'.format(contrib)], start=1):
@@ -155,40 +135,15 @@ def main(args):
     refs = collections.defaultdict(list)
 
     for param in args.cldf.iter_rows('ParameterTable', 'id', 'name', 'contributionReference'):
-        description = args.cldf.directory.parent.joinpath('doc', '{}.md'.format(param['id']))
-        if description.exists():
-            description = description.read_text(encoding='utf8')
-        else:
-            description = None
         data.add(
             models.Feature,
             param['id'],
             id=param['id'],
             name='{}'.format(param['name']),
-            markup_description=render_description(description) if description else None,
+            markup_description=param['Feature_Description'],
             category=param['Area'],
             contribution=data['Contribution'][param['contributionReference']],
     )
-    data.add(
-        models.Feature,
-        'adm',
-        id='adm',
-        name="Admixture component",
-    )
-    for ccid, cid, color in [
-        ('C1', 'Finnic ancestry', '#e79e3f'),
-        ('C2', 'Ob-Ugric ancestry', '#7783c5'),
-        ('C3', 'Volgaic ancestry', '#b44094'),
-        ('C4', 'Saami ancestry', '#7d9f64'),
-    ]:
-        data.add(
-            common.DomainElement,
-            ccid,
-            id=ccid,
-            name=cid,
-            parameter=data['Feature']['adm'],
-            jsondata=dict(color=color),
-        )
     for pid, codes in itertools.groupby(
             sorted(
                 args.cldf.iter_rows('CodeTable', 'id', 'name', 'description', 'parameterReference'),
@@ -216,6 +171,9 @@ def main(args):
             parameter=data['Feature'][pid],
             jsondata=dict(color='#f00'),
         )
+    #
+    # FIXME: something goes wrong with Example relations!
+    #
     for ex in args.cldf.iter_rows('ExampleTable', 'id', 'languageReference'):
         data.add(
             common.Sentence,

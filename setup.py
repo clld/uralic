@@ -22,11 +22,9 @@ setup(
         'clld>=9.2.2',
         'clld-phylogeny-plugin',
         'clld-glottologfamily-plugin>=4.0',
+        'clld-markdown-plugin',
         'pyglottolog',
-
-
         'clldmpg',
-
 ],
 extras_require={
         'dev': ['flake8', 'waitress', 'python-nexus'],

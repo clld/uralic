@@ -102,12 +102,6 @@ class FeatureMap(ParameterMap):
                 yield legend
 
 
-class AdmixtureMap(FeatureMap):
-    def __init__(self, ctx, req, **kw):
-        ctx = DBSession.query(common.Parameter).filter(common.Parameter.id == 'adm').one()
-        super(AdmixtureMap, self).__init__(ctx, req, **kw)
-
-
 class VarietyMap(LanguageMap):
 
     """Map showing a single language."""
@@ -135,9 +129,8 @@ class VarietiesMap(Map):
 
 
 def includeme(config):
-    #config.register_adapter(GeoJsonAreas, ILanguage, IIndex, name=GeoJsonAreas.extension)
+    config.register_adapter(GeoJsonAreas, ILanguage, IIndex, name=GeoJsonAreas.extension)
     config.register_map('parameter', FeatureMap)
-    #config.register_map('languages', AdmixtureMap)
     config.register_map('languages', VarietiesMap)
     config.register_map('language', VarietyMap)
     config.register_adapter(GeoJsonFeature, IParameter, name=GeoJson.mimetype)

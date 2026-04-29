@@ -2,6 +2,7 @@
 <%namespace name="util" file="../util.mako"/>
 <%! active_menu_item = "parameters" %>
 <%! from clld_phylogeny_plugin.tree import Tree %>
+<%! from clld_markdown_plugin import markdown %>
 <%block name="title">${_('Parameter')} ${ctx.name}</%block>
 
 <%block name="head">
@@ -29,13 +30,6 @@
             Table
         </a>
     </li>
-    <li class="">
-        <a href="#tree-container">
-            <img src="${req.static_url('uralic:static/Tree_Icon.png')}"
-                 width="35">
-            Tree
-        </a>
-    </li>
 </ul>
 
 <div class="span4" style="float: right; margin-top: 1em; clear: right">
@@ -59,7 +53,7 @@
 <p>${h.link(req, ctx.contribution)} feature ${ctx.id}</p>
 
 % if ctx.markup_description:
-<div>${ctx.markup_description|n}</div>
+<div>${markdown(request, ctx.markup_description)|n}</div>
 % endif
 
 <div style="clear: both"/>
@@ -71,10 +65,5 @@
 ${request.get_datatable('values', h.models.Value, parameter=ctx).render()}
 </div>
 
-
-<div id="tree-container">
-    <h4>Values for this feature plotted on the phylogenetic tree</h4>
-${tree.render()|n}
-</div>
 
 ##${h.get_adapter(h.interfaces.IRepresentation, ctx, req, ext='valuetable.html').render(ctx, req)|n}
