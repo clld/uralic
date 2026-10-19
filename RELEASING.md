@@ -1,5 +1,12 @@
 # Releasing clld/uralic
 
+
+```shell
+git clone https://github.com/clld/uralic
+cd uralic
+pip install -e .[test]
+```
+
 * data is located at [cldf-datasets/uratyp](https://github.com/cldf-datasets/uratyp).  
 
 * create the database (with data repo in `./uratyp/`)
