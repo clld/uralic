@@ -39,10 +39,10 @@ def read_shapes(p):
 
 
 def main(args):
-    rantanen = pathlib.Path('/home/robert/projects/glottography') / 'rantanen2021uralic'
+    project_dir = args.cldf.directory.resolve().parent.parent
+    rantanen = project_dir / 'rantanen2021uralic'
     geo = Dataset.from_metadata(rantanen / 'cldf' / 'Generic-metadata.json')
-    geo2 = Dataset.from_metadata(pathlib.Path(
-        '/home/robert/projects/glottography') / 'asher2007world' / 'cldf' / 'traditional' / 'traditional-metadata.json')
+    geo2 = Dataset.from_metadata(project_dir / 'asher2007world' / 'cldf' / 'traditional' / 'traditional-metadata.json')
 
     langs = {r.cldf.glottocode: r.speaker_area_as_geojson_feature
              for r in geo.objects('LanguageTable')}
@@ -104,6 +104,7 @@ def main(args):
             'Hill_Mari': 'kozy1238',
         }.get(lang['name'], lang['glottocode'])
         assert lang['glottocode'] or lang['name'] == 'East_Mansi'
+
         v = data.add(
             models.Variety,
             lang['id'],

@@ -25,7 +25,9 @@ setup(
         'clld-markdown-plugin',
         'pyglottolog',
         'clldmpg',
-],
+        'shapely',
+        'psycopg2',
+    ],
 extras_require={
         'dev': ['flake8', 'waitress', 'python-nexus'],
         'test': [

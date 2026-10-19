@@ -7,19 +7,34 @@ cd uralic
 pip install -e .[test]
 ```
 
-* data is located at [cldf-datasets/uratyp](https://github.com/cldf-datasets/uratyp).  
+Clone the data repositories
+```shell
+cd ..
+git clone --depth 1 https://github.com/cldf-datasets/uratyp
+git clone --depth 1 https://github.com/glottography/rantanen2021uralic
+git clone --depth 1 https://github.com/glottography/asher2007world
+cd uralic
+```
 
-* create the database (with data repo in `./uratyp/`)
-  ```shell
-  clld initdb --cldf ../uratyp/cldf/StructureDataset-metadata.json --glottolog ~/projects/glottolog/glottolog development.ini
-  ```
+Re-create the database:
+```shell
+clld initdb --cldf ../uratyp/cldf/StructureDataset-metadata.json --glottolog ~/projects/glottolog/glottolog development.ini
+```
 
-* run tests
-  ```shell
-  pytest
-  ```
+Run tests
+```shell
+pytest
+```
 
-* deploy
-  ```
-  (appconfig)$ fab deploy:production
-  ```
+Store the tested requirements:
+```shell
+pip freeze > requirements.txt
+```
+
+Store a db dump:
+```shell
+pg_dump -xO uralic > uralic.sql
+zip uralic.sql.zip uralic.sql
+rm uralic.sql
+```
+
