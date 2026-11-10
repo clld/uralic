@@ -31,7 +31,7 @@
     <div class="well">
         <h3>How to cite UraTyp 2.0 datasets</h3>
         <blockquote>
-            <p>${ctx.jsondata['citation']}</p>
+            <p>${ctx.jsondata['citation'].replace('Feodo', 'Fedo')}</p>
             <a href="https://doi.org/10.5281/zenodo.5236365">
                 <img src="https://zenodo.org/badge/DOI/10.5281/zenodo.5236365.svg" alt="DOI: 10.5281/zenodo.5236365"></a>
         </blockquote>
